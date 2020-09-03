@@ -1,0 +1,5 @@
+Setup Steps: 
+
+install node
+
+install puppeteer  and other libraries, install pg node package (postgres
