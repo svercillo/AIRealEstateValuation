@@ -25,6 +25,7 @@ puppeteer.launch({
         for ( var i =0; i<urls.length; i++){
             var split =   urls[i].split("https://www.zolo.ca/toronto-real-estate/"); 
             if (split[1] != null){
+
                 var firstChar = split[1][0];
                 // if link is a valid address...
                 if ( !used_urls.has(urls[i]) && firstChar >= '0' && firstChar <='9'){    
@@ -194,7 +195,20 @@ puppeteer.launch({
                                     // o.name = dists[e].innerText;
                                     // arr.push(o);
 
-                                    arr.push(divs[e].innerText);
+                                    // get only the distance i.e. "0.12 km" from this span 
+                                    let string = dists[e].innerText
+                                    let startind = -1;
+                                    let endind = -1;
+                                    for (var c =0; c<string.length; c++){
+                                        let char = string[c];
+                                        if (char >="0" && char <= "9"){
+                                            startind = c;
+                                        } else if  (char == 'k'){
+                                            endind =c+2;
+                                        }
+                                    }
+                                    string = string.substring(startind, endind);
+                                    arr.push(string);
                                 }
                             }
     
@@ -228,7 +242,22 @@ puppeteer.launch({
                         continue;
                     }
 
+                    // replace empty spaces in the address with regex and using this as file name
+                    const filename = pagedata.address.replace(/\s/g, '');
+
                     console.log(pagedata);
+
+
+                    // convert json to string
+                    pagedata = JSON.stringify(pagedata);
+                    
+                    // save json object to data folder
+                    var fs = require('fs');
+                    fs.writeFile(("data/".concat(filename)).concat(".json"), pagedata, function(err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
                 }
             }
         }
