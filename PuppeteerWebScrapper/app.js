@@ -7,11 +7,18 @@ puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080'] 
     }).then(async browser => {
 
+
+    // create new page
     const page = await browser.newPage();
     
+    // open file stream
+    const fs = require('fs');
+
+    // this does nothing atm
     var endofentries = false;
     var pageNum = 1
     while( !endofentries){ 
+        // go to the appropriate base url + if necessary
         if (pageNum ==1){
             await page.goto("https://www.zolo.ca/toronto-real-estate/sold");
         } else {
@@ -20,12 +27,14 @@ puppeteer.launch({
         
         // get every link tag
         const urls = await page.$$eval('a', as => as.map(a => a.href));
+        // set of used urls so we dont go the same place twice
         let used_urls = new Set();
-        
-        for ( var i =0; i<urls.length; i++){
-            var split =   urls[i].split("https://www.zolo.ca/toronto-real-estate/"); 
-            if (split[1] != null){
 
+        for ( var i =0; i<urls.length; i++){
+            // use the string in the split function as a delimeter for the url 
+            var split =   urls[i].split("https://www.zolo.ca/toronto-real-estate/"); 
+            // if the url is a sold house
+            if (split[1] != null){
                 var firstChar = split[1][0];
                 // if link is a valid address...
                 if ( !used_urls.has(urls[i]) && firstChar >= '0' && firstChar <='9'){    
@@ -52,7 +61,7 @@ puppeteer.launch({
                     // }
 
                     let pagedata = await page.evaluate(() => {
-                        try{                       
+                        try{
                             // create a set of known columns in the middle of the page, check to see nothing weird is coming up
                             const possibleColumns = new Set();
                             possibleColumns.add('Type');
@@ -68,25 +77,28 @@ puppeteer.launch({
                             possibleColumns.add('Lease Term');
                             possibleColumns.add('Possession');
                             possibleColumns.add('All Inclusive');
-                        
+                            
+                            // get all the spans
                             let spans =  document.querySelectorAll('span[class="priv"]');
-
-                            if (spans[6].innerText.localeCompare("Sold") !=0){
+                            
+                            // if these conditions are true, page is not a SOLD property 
+                            if (spans[6] == undefined || spans[6].innerText.localeCompare("Sold") !=0){
                                 return -1;
                             }
+
                             
                             let col_names =  document.querySelectorAll('dt[class="column-label"]');
 
+                            // skip Walk Score cause this is being weird
                             let temp = [];
                             for (var tt = 0 ; tt < col_names.length; tt++){
                                 if (col_names[tt].innerText.localeCompare('Walk Score') != 0){
                                     temp.push(col_names[tt]);
                                 }
                             }
-                            
                             col_names = temp;
 
-                            // constant ? 
+                            // all of these are the same for each page
                             let address =  document.querySelector('section>h1').innerText;
                             let bedNum = spans[0].innerText;
                             let bathNum = spans[1].innerText;
@@ -94,15 +106,8 @@ puppeteer.launch({
                             let sold_price = spans[3].innerText;
                             let soldOn = spans[5].innerText;
 
-                            
-                            // let type = spans[7].innerText;
-                            // let style = spans[8].innerText;
-                            // let lotSize = spans[10].innerText; // usually null
-                            // let age = spans[11].innerText;
-                            // let taxes = spans[12].innerText;
-                            // let maintenance_fees = spans[13].innerText  
-                            
 
+                            // init return
                             obj = 
                             {
                                 'sold_price': sold_price,
@@ -131,24 +136,13 @@ puppeteer.launch({
                                 var col = col_names[w+y].innerText;
                                 // some weird column name has come up
                                 if(!possibleColumns.has(col)){
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log(urls[i]);
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-                                    console.log( "ERROR:::::::::::::::::::::::::::")
-
+                                    // invalid 
+                                    return -1;
                                 }
-                                // if (col.localeCompare("Walk Score") == 0){
-                                    obj[col] =  spans[7+ w].innerText;
-                                // } else {
-                                    // obj[col] =  spans[7+ w].innerText;
-                                // }
+                                obj[col] =  spans[7+ w].innerText;
                             }
 
+                            // this is the list of nearby amenities
                             const nearbyCols = [];
                             nearbyCols.push("Groceries");
                             nearbyCols.push("Liquor Store");
@@ -165,9 +159,13 @@ puppeteer.launch({
                             nearbyCols.push("Movie Theatre");
                             nearbyCols.push("Bar");
 
+                            // get all divs
                             let divs =  document.querySelectorAll('div[class="media-heading"]');
+                            
+                            //get all distances 
                             let dists = document.querySelectorAll('span[class="badge badge--small badge--mono"]')
-    
+                            
+                            // temp object
                             let ndata = {};
                             let arr =[];
                             let lastCol = "";
@@ -213,13 +211,7 @@ puppeteer.launch({
                             }
     
                             delete ndata[""]
-                            obj['Amenities'] = ndata;    
-
-                            // let divs =  document.querySelectorAll('div[class="media-heading"] > span[class="badge badge--small badge--mono"]');
-                            // for (let e =1; e< nearbyCols.length +1; e++ ){
-                            //     let distanceTo = divs[e].innerText;
-                            //     obj['Nearest Distance to '.concat(nearbyCols[e-1])] = distanceTo;
-                            // }
+                            obj['Amenities'] = ndata;
                             
                             let schoolRatings = document.querySelectorAll('div[class="media-text"]');
                             let allSchoolType = document.querySelectorAll('div[class="media-sub-heading text-secondary"]');
@@ -244,7 +236,10 @@ puppeteer.launch({
 
                     // replace empty spaces in the address with regex and using this as file name
                     const filename = pagedata.address.replace(/\s/g, '');
-
+                    const filepath = ("data/".concat(filename)).concat(".json");
+                    
+                    pagedata['pageNum'] = pageNum;
+                    pagedata['weblink'] = urls[i]
                     console.log(pagedata);
 
 
@@ -252,12 +247,25 @@ puppeteer.launch({
                     pagedata = JSON.stringify(pagedata);
                     
                     // save json object to data folder
-                    var fs = require('fs');
-                    fs.writeFile(("data/".concat(filename)).concat(".json"), pagedata, function(err) {
+                    
+                                                                // // check if file already exits, if so skip
+                                                                // try {
+                                                                //     if (!fs.existsSync(filepath)) {
+                                                                //         //file does exists
+                                                                //         continue;
+                                                                //     }
+                                                                // } catch(err) {
+                                                                //     pagedata['error'] = err
+                                                                //     // continue;
+                                                                // }
+
+                    fs.writeFile(filepath, pagedata, function(err) {
                         if (err) {
                             console.log(err);
                         }
                     });
+
+
                 }
             }
         }
@@ -267,7 +275,7 @@ puppeteer.launch({
     await browser.close();
 
 }).catch(function(error) {
-    // console.error(error);
+    console.error(error);
 });
 
 
