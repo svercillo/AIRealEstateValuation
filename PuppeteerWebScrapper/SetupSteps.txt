@@ -1,5 +1,21 @@
 Setup Steps: 
 
 install node
+https://nodejs.org/en/download/
 
-install puppeteer  and other libraries, install pg node package (postgres
+check if node is installed: 
+npm -v 
+
+cd puppeteer
+npm init -y 
+
+npm installl 
+
+run app: 
+node app.js
+
+ // install puppeteer  and other libraries, install pg node package (postgres) 
+
+
+
+ 
