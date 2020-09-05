@@ -14,6 +14,16 @@ puppeteer.launch({
     // open file stream
     const fs = require('fs');
 
+
+    // represents the num of cols before pushing to the csv file
+    const MAXCOLS = 2;
+
+    const ObjectsToCsv = require('objects-to-csv')
+
+    var csvCols = [];
+
+
+
     // this does nothing atm
     var endofentries = false;
     var pageNum = 1
@@ -239,6 +249,7 @@ puppeteer.launch({
                     const filepath = ("data/".concat(filename)).concat(".json");
                     
                     pagedata['pageNum'] = pageNum;
+                    pagedata['iterationNum'] = i;
                     pagedata['weblink'] = urls[i]
                     console.log(pagedata);
 
@@ -259,19 +270,32 @@ puppeteer.launch({
                                                                 //     // continue;
                                                                 // }
 
-                    fs.writeFile(filepath, pagedata, function(err) {
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
+                    // fs.writeFile(filepath, pagedata, function(err) {
+                    //     if (err) {
+                    //         console.log(err);
+                    //     }
+                    // });
 
+
+                    pagedata = { pagedata};
+                    csvCols.push(pagedata);
+                    
+                    if (csvCols.length >= MAXCOLS){
+                        const csv = new ObjectsToCsv(csvCols);
+                        await csv.toDisk('data.csv', { append: true })
+                        csvCols = [];
+                    }
 
                 }
             }
         }
+        
+  
 
         pageNum ++;
     }
+
+
     await browser.close();
 
 }).catch(function(error) {
