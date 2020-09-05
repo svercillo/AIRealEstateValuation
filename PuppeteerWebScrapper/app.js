@@ -199,7 +199,7 @@ puppeteer.launch({
                                     let endind = -1;
                                     for (var c =0; c<string.length; c++){
                                         let char = string[c];
-                                        if (char >="0" && char <= "9"){
+                                        if (char >="0" && char <= "9" && startind == -1){
                                             startind = c;
                                         } else if  (char == 'k'){
                                             endind =c+2;
