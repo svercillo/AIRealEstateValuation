@@ -276,13 +276,19 @@ puppeteer.launch({
                     //     }
                     // });
 
-
-                    pagedata = { pagedata};
                     csvCols.push(pagedata);
                     
                     if (csvCols.length >= MAXCOLS){
-                        const csv = new ObjectsToCsv(csvCols);
-                        await csv.toDisk('data.csv', { append: true })
+
+                        let string  = "";
+                        for (var z = 0; z <csvCols.length; z++){
+                            string += csvCols[z] + '\n';
+                        }
+
+                        fs.appendFile('../Data/data.txt', string, function (err) {
+                            if (err) throw err;
+                            console.log('Saved!');
+                        });
                         csvCols = [];
                     }
 
