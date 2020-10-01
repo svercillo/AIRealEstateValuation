@@ -19,9 +19,9 @@ This was a unique variable to take into consideration. Basically what was done h
 All of these unique exponetial funcitons are calculated using a secondary model.
 
 ## Group Members
-Dillon Varone
-Sathira Katugaha
-Stefan Vercillo (Me!)
+* Dillon Varone
+* Sathira Katugaha
+* Stefan Vercillo (Me!)
 
 
 
