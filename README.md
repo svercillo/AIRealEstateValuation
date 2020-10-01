@@ -21,6 +21,7 @@ All of these unique exponetial funcitons are calculated using a secondary model.
 ## Group Members
 * Dillon Varone
 * Sathira Katugaha
+* Chris Mcgale
 * Stefan Vercillo (Me!)
 
 
