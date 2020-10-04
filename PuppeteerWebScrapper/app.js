@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const tools = require('./tools')
 
 puppeteer.launch({ 
     executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
@@ -14,25 +15,27 @@ puppeteer.launch({
     // open file stream
     const fs = require('fs');
 
-
+    const TOlong = -79.383186
+    const TOlat = 43.653225
+    
     // represents the num of cols before pushing to the csv file
-    const MAXCOLS = 2;
-
-    const ObjectsToCsv = require('objects-to-csv')
+    const MAXCOLS = 10;
 
     var csvCols = [];
-
-
 
     // this does nothing atm
     var endofentries = false;
     var pageNum = 1
     while( !endofentries){ 
         // go to the appropriate base url + if necessary
-        if (pageNum ==1){
-            await page.goto("https://www.zolo.ca/toronto-real-estate/sold");
-        } else {
-            await page.goto("https://www.zolo.ca/toronto-real-estate/sold/page-".concat(pageNum.toString(10)));
+        try{
+            if (pageNum ==1){
+                await page.goto("https://www.zolo.ca/toronto-real-estate/sold");
+            } else {
+                await page.goto("https://www.zolo.ca/toronto-real-estate/sold/page-".concat(pageNum.toString(10)));
+            }
+        } catch (err){
+            throw new PageContactError("page num ".concat(pageNum).concat(" dose not exist"));
         }
         
         // get every link tag
@@ -51,7 +54,12 @@ puppeteer.launch({
                     console.log(urls[i]);
                     console.log(i)
                     used_urls.add(urls[i]);
-                    await page.goto(urls[i], {waitUntil: 'networkidle2'});  // wait for no more than 2 network connections for 500ms    
+
+                    try{
+                        await page.goto(urls[i], {waitUntil: 'networkidle2'});  // wait for no more than 2 network connections for 500ms    
+                    } catch(err){
+                        throw new PageContactError("page ".concat(urls[i]).concat(" either doesn't exist or there's a network connection error"));
+                    }
                     
                     // check if login pages 
                     try { 
@@ -61,8 +69,12 @@ puppeteer.launch({
                         // pass
                     }
 
-                    await page.goto(urls[i], {waitUntil: 'networkidle2'});  // this works well
-                    
+                    try{
+                        await page.goto(urls[i], {waitUntil: 'networkidle2'});  // wait for no more than 2 network connections for 500ms    
+                    } catch(err){
+                        throw new PageContactError("page ".concat(urls[i]).concat(" either doesn't exist or there's a network connection error"));
+                    }
+
                     // await wait(150000);
                     // async function wait(ms) {
                     //     return new Promise(resolve => {
@@ -93,7 +105,7 @@ puppeteer.launch({
                             
                             // if these conditions are true, page is not a SOLD property 
                             if (spans[6] == undefined || spans[6].innerText.localeCompare("Sold") !=0){
-                                return -1;
+                                return -3;
                             }
 
                             
@@ -141,13 +153,15 @@ puppeteer.launch({
                                 'All Inclusive' : null
                             }
                             
+
+                            //  PROCESSING AMENITIES
                             var y = 0; 
                             for (var w =0; w < col_names.length; w++){
                                 var col = col_names[w+y].innerText;
                                 // some weird column name has come up
                                 if(!possibleColumns.has(col)){
                                     // invalid 
-                                    return -1;
+                                    return -2;
                                 }
                                 obj[col] =  spans[7+ w].innerText;
                             }
@@ -235,18 +249,54 @@ puppeteer.launch({
                                 temp['rating'] = schoolRatings[e].innerText
                                 obj['Nearest Schools'].push(temp)
                             }
+                            
                             return obj;
                         } catch(err){
-                            return {"error" : err }
+                            return -1
                         }
                     });
-                    if (pagedata == -1){
+                    if (pagedata == -1 || pagedata == -2 || pagedata -3){
+                        console.log(pagedata)
                         continue;
                     }
 
-                    // replace empty spaces in the address with regex and using this as file name
-                    const filename = pagedata.address.replace(/\s/g, '');
-                    const filepath = ("data/".concat(filename)).concat(".json");
+                    // // replace empty spaces in the address with regex and using this as file name
+                    // const filename = pagedata.address.replace(/\s/g, '');
+                    // const filepath = ("data/".concat(filename)).concat(".json");
+                    
+
+                    // process string
+                    // if string contains unit number, only take address
+                    let str = pagedata['address'];
+                    var j =0;
+                    for ( ; j< str.length; j++){
+                        if (str[j] == '-'){
+                            break;
+                        }
+                    }
+                    if (j != str.length){
+                        str = str.substring(j+1);
+                    }
+
+                    pagedata['address'] = str;
+
+                    // get coords from address
+                    let coords = await tools.coords(pagedata['address']);
+                    
+                    console.log(pagedata['address'])
+                    console.log(coords)
+
+
+                    if ('error' in coords || 
+                        Math.abs(coords['lat'] -TOlat) > 5 || 
+                        Math.abs(coords['lon'] - TOlong) > 5
+                    ){
+                        console.log("geodata error");
+                        throw new BadRowError("geodata error");
+                    }
+
+                    pagedata['longitude'] = coords['lon'];
+                    pagedata['latitude'] = coords['lat'];
                     
                     pagedata['pageNum'] = pageNum;
                     pagedata['iterationNum'] = i;
@@ -259,23 +309,6 @@ puppeteer.launch({
                     
                     // save json object to data folder
                     
-                                                                // // check if file already exits, if so skip
-                                                                // try {
-                                                                //     if (!fs.existsSync(filepath)) {
-                                                                //         //file does exists
-                                                                //         continue;
-                                                                //     }
-                                                                // } catch(err) {
-                                                                //     pagedata['error'] = err
-                                                                //     // continue;
-                                                                // }
-
-                    // fs.writeFile(filepath, pagedata, function(err) {
-                    //     if (err) {
-                    //         console.log(err);
-                    //     }
-                    // });
-
                     csvCols.push(pagedata);
                     
                     if (csvCols.length >= MAXCOLS){
@@ -295,17 +328,28 @@ puppeteer.launch({
                 }
             }
         }
-        
-  
-
         pageNum ++;
     }
-
-
+    
     await browser.close();
 
 }).catch(function(error) {
     console.error(error);
 });
 
+
+// Error classes 
+class PageContactError extends Error {
+    constructor(message) {
+        super(message); // (1)
+        this.name = "PageContactError"; // (2)
+    }   
+}
+
+class BadRowError extends Error {
+    constructor(message) {
+        super(message); // (1)
+        this.name = "BadRowError"; // (2)
+    }   
+}
 
