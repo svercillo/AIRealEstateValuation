@@ -1,4 +1,4 @@
-Setup Virtual Environments (this is for PC):
+Setup Virtual Environments (this is for PC): 
 cd to AIModel
 
 create virtual env
