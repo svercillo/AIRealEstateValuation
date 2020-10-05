@@ -6,5 +6,5 @@ async function aaa(){
   console.log(d); 
 }
 
-aaa()
+aaa() 
 
