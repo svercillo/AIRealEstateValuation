@@ -22,7 +22,7 @@ puppeteer.launch({
     const MAXCOLS = 10;
 
     var csvCols = [];
-
+ 
     // this does nothing atm
     var endofentries = false;
     var pageNum = 1
