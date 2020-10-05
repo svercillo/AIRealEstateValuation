@@ -126,4 +126,4 @@ async function get_coords_from_address (ADDRESS){
             return {'error' : err}
         }
     })();
-}
+} 
