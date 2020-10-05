@@ -1,6 +1,6 @@
 import json
 import requests
-
+ 
 #forward geocoding function (address to coordinates)
 def forward_geocode(address, city='Toronto', state = 'Ontario', country = 'Canada'):
     #api key
