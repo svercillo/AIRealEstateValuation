@@ -18,11 +18,6 @@ There were a variety of variables as mentioned taken into consideration for the 
 This was a unique variable to take into consideration. Basically what was done here was each individual area code was given a new exponential function for how important close data points or properties are in affecting property value. I.e. in some area codes, houses slightly outside of the neighborhood affect the current property value.
 All of these unique exponetial funcitons are calculated using a secondary model.
 
-## Group Members
-* Dillon Varone
-* Sathira Katugaha
-* Chris Mcgale
-* Stefan Vercillo (Me!)
 
 
 
