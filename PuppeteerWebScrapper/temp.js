@@ -1,7 +1,8 @@
 const puppeteer = require('puppeteer');
  
 puppeteer.launch({ 
-    executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    // C:\Users\HP USER\Downloads
+    // executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     headless: true,
     userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36",
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1920,1080'] 
