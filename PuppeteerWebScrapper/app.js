@@ -32,7 +32,7 @@ function scrap_data_starting_at_page(pageNum){
         const TOlat = 43.653225
         
         // represents the num of cols before pushing to the csv file
-        const MAXCOLS = 1;
+        const MAXCOLS = 10;
 
         var csvCols = [];
     
@@ -45,6 +45,9 @@ function scrap_data_starting_at_page(pageNum){
                     await page.goto("https://www.zolo.ca/toronto-real-estate/sold");
                 } else {
                     await page.goto("https://www.zolo.ca/toronto-real-estate/sold/page-".concat(pageNum.toString(10)));
+                }
+                if (pageNum == 100){
+                    break
                 }
             } catch (err){
                 throw new PageContactError("page num ".concat(pageNum).concat(" dose not exist"));
@@ -303,7 +306,8 @@ function scrap_data_starting_at_page(pageNum){
                             Math.abs(coords['lon'] - TOlong) > 5
                         ){
                             console.log("geodata error");
-                            throw new BadRowError("geodata error");
+                            continue;
+                            // throw new BadRowError("geodata error");
                         }
 
                         pagedata['longitude'] = coords['lon'];
@@ -330,7 +334,6 @@ function scrap_data_starting_at_page(pageNum){
                     }
                 }
             }
-            break 
             pageNum ++;
         }
         
@@ -356,4 +359,4 @@ class BadRowError extends Error {
 
 
 
-scrap_data_starting_at_page(1)
+scrap_data_starting_at_page(97)
