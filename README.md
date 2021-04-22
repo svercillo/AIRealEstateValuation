@@ -2,9 +2,9 @@
 
 ## Repo Principles
 
-When checking out a branch, use a branch with your name. I.e. git checkout -b "sathirasBranch"
-Open a PR and then merge into master that way the history of mergers is always maintained well. 
-Help clean any dead or misformatted files and code
+* When checking out a branch, use a branch with your name. I.e. git checkout -b "sathirasBranch"
+* Open a PR and then merge into master that way the history of mergers is always maintained well. 
+* Help clean any dead or misformatted files and code
 
 ## Introduction
 The purpose of this project is to predict the current value of unlisted properties in the Toronto region based on a 30+ variable multilayer percepitron. The intention is then to visualize this on a web-application like a Python-Flask with react flask where you would be able to type in an address or postal code, and our pre-trained model would spit out a value.
