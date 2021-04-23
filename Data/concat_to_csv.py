@@ -39,7 +39,7 @@ for i in range(1, 450):
                 col_names = [k for k in data] 
         
         if len(rows) > 150:
-            with open('a.csv', 'a+', newline='') as csv_f:
+            with open('data.csv', 'a+', newline='') as csv_f:
                 writer = csv.writer(csv_f)
                 if first:
                     writer.writerows([col_names])
@@ -51,7 +51,7 @@ for i in range(1, 450):
         print(f"page {i} failed")
 
 
-with open('a.csv', 'a+', newline='') as csv_f:
+with open('data.csv', 'a+', newline='') as csv_f:
     writer = csv.writer(csv_f)
     if first:
         writer.writerows(col_names)
