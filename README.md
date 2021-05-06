@@ -27,3 +27,27 @@ All of these unique exponetial funcitons are calculated using a secondary model.
 
 
 
+## Backend 
+
+
+### Setup 
+Requirements: python3 as python, pip3 as pip, virtuenv-python
+
+* On Linux: 
+
+cd backend 
+python -m venv env (optional)
+source env/bin/activate (optional)
+pip install -r requirements.txt
+
+ONE TIME ONLY: 
+python create_api_key.py (optional, creates api key and adds it to env file. This should be copied in frontend)
+
+python server.py 
+
+
+
+### Testing 
+Requirements: pytest 
+cd backend;
+pytest (outside of venv)

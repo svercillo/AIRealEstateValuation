@@ -1,0 +1,10 @@
+flask-restful
+waitress
+Flask-SQLAlchemy==2.5.1
+Flask==1.1.2
+python-dotenv
+waitress
+flask-cors
+pytest
+Flask-Script
+Flask-Migrate
